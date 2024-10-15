@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Miles</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f2f2f2; /* Light tan */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1); /* Shadow effect */
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        #runButton {
+            font-family: 'Arial', sans-serif;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4da6ff; /* Light blue */
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        #runButton:hover {
+            background-color: #0066cc; /* Darker blue on hover */
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #333; /* Dark gray */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <h1>Run Miles</h1>
+        <button id="runButton">Run Code</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('runButton').addEventListener('click', async function() {
+    console.log('Button clicked'); // Add this logging statement
+    try {
+        const response = await fetch('code.zip');
+        const blob = await response.blob();
+        console.log('Blob:', blob); // Add this logging statement
+        const zip = await JSZip.loadAsync(blob);
+        console.log('Zip:', zip); // Add this logging statement
+        const fileData = await zip.file('miles.js').async('string');
+        console.log('File Data:', fileData); // Add this logging statement
+        eval(fileData);
+        document.getElementById('result').innerText = 'Code executed successfully.';
+    } catch (error) {
+        document.getElementById('result').innerText = 'Error executing code: ' + error.message;
+    }
+});
+    </script>
+</body>
+</html>
