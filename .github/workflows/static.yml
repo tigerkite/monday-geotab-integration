@@ -1,0 +1,38 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Ensure it triggers when you push to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build project
+      run: npm run build  # Adjust this if you don't need a build step, or if you have one
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./build  # Change this to where your HTML files are located (e.g., 'public', 'build', or root)
+
+    - name: Use Secrets for API Calls
+      run: |
+        echo "GEOTAB_DATABASE=${{ secrets.GEOTAB_DATABASE }}"
+        echo "GEOTAB_USERNAME=${{ secrets.GEOTAB_USERNAME }}"
+        echo "MONDAY_ACCESS_TOKEN=${{ secrets.MONDAY_ACCESS_TOKEN }}"
+        # Your custom code here that uses these secrets
