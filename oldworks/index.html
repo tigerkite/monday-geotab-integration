@@ -49,40 +49,33 @@
             font-size: 16px;
             color: #333; /* Dark gray */
         }
-
-        #log {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #333;
-            white-space: pre-wrap; /* This allows new lines */
-        }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
 </head>
 <body>
     <div id="container">
         <h1>Run Miles</h1>
         <button id="runButton">Run Code</button>
         <div id="result"></div>
-        <div id="log"></div> <!-- This will display the log -->
     </div>
 
-    <!-- Include your runmiles.js script -->
-    <script src="runmiles2.js"></script> <!-- Ensure this points to the correct file path -->
     <script>
         document.getElementById('runButton').addEventListener('click', async function() {
-            const resultDiv = document.getElementById('result');
-            const logDiv = document.getElementById('log');
-            resultDiv.innerText = "Running...";
-
-            try {
-                // Call the function from runmiles.js
-                await updateMondayOdometerReadings(logDiv);
-
-                resultDiv.innerText = "Code executed successfully.";
-            } catch (error) {
-                resultDiv.innerText = 'Error executing code: ' + error.message;
-            }
-        });
+    console.log('Button clicked'); // Add this logging statement
+    try {
+        const response = await fetch('code.zip');
+        const blob = await response.blob();
+        console.log('Blob:', blob); // Add this logging statement
+        const zip = await JSZip.loadAsync(blob);
+        console.log('Zip:', zip); // Add this logging statement
+        const fileData = await zip.file('miles.js').async('string');
+        console.log('File Data:', fileData); // Add this logging statement
+        eval(fileData);
+        document.getElementById('result').innerText = 'Code executed successfully.';
+    } catch (error) {
+        document.getElementById('result').innerText = 'Error executing code: ' + error.message;
+    }
+});
     </script>
 </body>
 </html>

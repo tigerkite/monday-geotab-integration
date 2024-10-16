@@ -1,15 +1,13 @@
-require('dotenv').config(); // Load environment variables from .env
-
 const GeotabApi = require('mg-api-js');
 const fetch = require('node-fetch');
 
-const mondayAccessToken = process.env.MONDAY_ACCESS_TOKEN;
+const mondayAccessToken = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjkwMzEwODA1LCJhYWkiOjExLCJ1aWQiOjE2Nzk1MTA1LCJpYWQiOiIyMDIwLTExLTA5VDAxOjAxOjI2LjAwMFoiLCJwZXIiOiJtZTp3cml0ZSIsImFjdGlkIjo1MjQ3MzA0LCJyZ24iOiJ1c2UxIn0.ENNmUZ3yt1XYgeWAjRTBKjdZzb_IFio4VSROMZBoVf0';
 
 const api = new GeotabApi({
     credentials: {
-        database: process.env.GEOTAB_DATABASE,
-        userName: process.env.GEOTAB_USERNAME,
-        password: process.env.GEOTAB_PASSWORD
+        database: 'zmrcorp1',
+        userName: 'bentsionweiss@yahoo.com',
+        password: 'Fedex123'
     },
     path: 'my.geotab.com'
 });
