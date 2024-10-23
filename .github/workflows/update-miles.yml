@@ -1,0 +1,30 @@
+name: Update Miles Integration
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Runs every 6 hours
+  workflow_dispatch:        # Allows manual triggering
+
+jobs:
+  update-miles:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run miles integration
+        env:
+          MONDAY_ACCESS_TOKEN: ${{ secrets.MONDAY_ACCESS_TOKEN }}
+          GEOTAB_DATABASE: ${{ secrets.GEOTAB_DATABASE }}
+          GEOTAB_USERNAME: ${{ secrets.GEOTAB_USERNAME }}
+          GEOTAB_PASSWORD: ${{ secrets.GEOTAB_PASSWORD }}
+        run: node miles.js
