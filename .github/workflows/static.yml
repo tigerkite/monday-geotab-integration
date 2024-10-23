@@ -1,45 +1,40 @@
-name: Deploy to GitHub Pages
-
+name: Update Vehicle Miles
 on:
+  schedule:
+    - cron: '0 */6 * * *'  # Runs every 6 hours
+  workflow_dispatch:        # Allows manual triggering
   push:
     branches:
-      - main  # Trigger the deployment on pushes to the main branch
+      - main              # Also runs on pushes to main branch for testing
 
 jobs:
-  build:
+  run-miles-update:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js environment
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # Specify your node version
+          node-version: '16'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build project
-        run: npm run build  # Adjust this command if your build step is different
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build  # Adjust the path if necessary
-
-      - name: Use Geotab and Monday Secrets
-        run: |
-          echo "GEOTAB_DATABASE=${{ secrets.GEOTAB_DATABASE }}"
-          echo "GEOTAB_USERNAME=${{ secrets.GEOTAB_USERNAME }}"
-          echo "GEOTAB_PASSWORD=${{ secrets.GEOTAB_PASSWORD }}"
-          echo "GEOTAB_PATH=${{ secrets.GEOTAB_PATH }}"
-          echo "MONDAY_ACCESS_TOKEN=${{ secrets.MONDAY_ACCESS_TOKEN }}"
+      - name: Run miles update script
         env:
           GEOTAB_DATABASE: ${{ secrets.GEOTAB_DATABASE }}
           GEOTAB_USERNAME: ${{ secrets.GEOTAB_USERNAME }}
           GEOTAB_PASSWORD: ${{ secrets.GEOTAB_PASSWORD }}
           GEOTAB_PATH: ${{ secrets.GEOTAB_PATH }}
           MONDAY_ACCESS_TOKEN: ${{ secrets.MONDAY_ACCESS_TOKEN }}
+        run: node miles.js
+
+      - name: Log completion
+        if: success()
+        run: echo "Successfully updated vehicle miles"
+
+      - name: Log failure
+        if: failure()
+        run: echo "Failed to update vehicle miles"
