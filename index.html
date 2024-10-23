@@ -66,6 +66,9 @@
         <div id="log"></div> <!-- This will display the log -->
     </div>
 
+    <!-- Load the miles.js file as an ES module -->
+    <script type="module" src="miles.js"></script>
+
     <script type="module">
         import { updateMondayOdometerReadings } from './miles.js';
 
@@ -75,8 +78,14 @@
             resultDiv.innerText = "Running...";
 
             try {
-                // Call the function from runmiles.js
+                // Call the function from miles.js
                 await updateMondayOdometerReadings(logDiv);
 
                 resultDiv.innerText = "Code executed successfully.";
-         
+            } catch (error) {
+                resultDiv.innerText = 'Error executing code: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
