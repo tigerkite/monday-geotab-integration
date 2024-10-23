@@ -2,6 +2,7 @@ const mondayAccessToken = process.env.MONDAY_ACCESS_TOKEN;
 const geotabDatabase = process.env.GEOTAB_DATABASE;
 const geotabUsername = process.env.GEOTAB_USERNAME;
 const geotabPassword = process.env.GEOTAB_PASSWORD;
+const geotabPath = process.env.GEOTAB_PATH;
 
 const GeotabApi = require('mg-api-js');
 const fetch = require('node-fetch');
@@ -13,7 +14,7 @@ const api = new GeotabApi({
         userName: geotabUsername,
         password: geotabPassword
     },
-    path: 'my.geotab.com'
+    path: geotabPath || 'my.geotab.com'  // Use environment variable if set, otherwise fallback
 });
 
 async function fetchMondayGroups() {
