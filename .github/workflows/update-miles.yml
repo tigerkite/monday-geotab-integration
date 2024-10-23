@@ -27,4 +27,5 @@ jobs:
           GEOTAB_DATABASE: ${{ secrets.GEOTAB_DATABASE }}
           GEOTAB_USERNAME: ${{ secrets.GEOTAB_USERNAME }}
           GEOTAB_PASSWORD: ${{ secrets.GEOTAB_PASSWORD }}
+          GEOTAB_PATH: ${{ secrets.GEOTAB_PATH }}
         run: node miles.js
