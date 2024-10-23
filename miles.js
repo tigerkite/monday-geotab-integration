@@ -174,3 +174,4 @@ async function updateMondayOdometerReadings() {
 }
 
 updateMondayOdometerReadings();
+export { updateMondayOdometerReadings };
