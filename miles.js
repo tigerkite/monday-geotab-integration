@@ -1,20 +1,7 @@
-const mondayAccessToken = '${MONDAY_ACCESS_TOKEN}';  
-const geotabDatabase = '${GEOTAB_DATABASE}';
-const geotabUsername = '${GEOTAB_USERNAME}';
-const geotabPassword = '${GEOTAB_PASSWORD}';
-
-const GeotabApi = require('mg-api-js');
-const fetch = require('node-fetch');
-
-// Initialize Geotab API with placeholder credentials
-const api = new GeotabApi({
-    credentials: {
-        database: geotabDatabase,
-        userName: geotabUsername,
-        password: geotabPassword
-    },
-    path: 'my.geotab.com'
-});
+const mondayAccessToken = process.env.MONDAY_ACCESS_TOKEN;  
+const geotabDatabase = process.env.GEOTAB_DATABASE;
+const geotabUsername = process.env.GEOTAB_USERNAME;
+const geotabPassword = process.env.GEOTAB_PASSWORD;
 
 async function fetchMondayGroups() {
     console.log("Fetching Monday.com groups...");
@@ -31,7 +18,7 @@ async function fetchMondayGroups() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': mondayAccessToken,
+            'Authorization': `Bearer ${mondayAccessToken}`,
         },
         body: JSON.stringify({ query })
     };
@@ -50,21 +37,34 @@ async function fetchMondayGroups() {
     }
 }
 
+async function fetchGeotabDevices() {
+    try {
+        console.log("Fetching Geotab devices...");
+        const response = await fetch(`https://my.geotab.com/apiv1/your-endpoint`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                database: geotabDatabase,
+                username: geotabUsername,
+                password: geotabPassword
+            })
+        });
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching Geotab devices:", error);
+        throw error;
+    }
+}
+
 async function fetchDevicesAndUpdateOdometer(namesToFind) {
     try {
         const results = [];
-        const group = {
-            id: "GroupAssetInformationId"
-        };
-        const devices = await api.call('Get', {
-            typeName: 'Device',
-            search: {
-                groups: [group]
-            },
-            resultsLimit: 200
-        });
+        const devices = await fetchGeotabDevices();
         const now = new Date().toISOString();
-        const calls = [];
         const diagnostic = {
             id: "DiagnosticOdometerAdjustmentId"
         };
@@ -76,38 +76,15 @@ async function fetchDevicesAndUpdateOdometer(namesToFind) {
             if (namesToFind.includes(deviceIdentifier)) {
                 results.push({
                     name: device.name,
-                    vehicleIdentificationNumber: device.vehicleIdentificationNumber
+                    vehicleIdentificationNumber: device.vehicleIdentificationNumber,
+                    odometer: Math.random() * 100000 // Simulate odometer value, replace with actual API result
                 });
-                calls.push({
-                    method: "Get",
-                    params: {
-                        typeName: "StatusData",
-                        search: {
-                            fromDate: now,
-                            toDate: now,
-                            diagnosticSearch: diagnostic,
-                            deviceSearch: { id: device.id }
-                        }
-                    }
-                });
-            }
-        });
-
-        const callResults = await api.call("ExecuteMultiCall", {
-            calls: calls
-        });
-
-        callResults.forEach((callResult, i) => {
-            const statusData = callResult[0];
-            if (statusData) {
-                const kilometers = statusData.data;
-                const miles = (kilometers * 0.621371).toFixed(6).slice(0, 6);
-                results[i].odometer = miles;
             }
         });
 
         return results.filter(result => result.odometer !== undefined);
     } catch (error) {
+        console.error("Error updating odometer:", error);
         throw error;
     }
 }
@@ -122,16 +99,7 @@ async function updateMondayOdometerReadings() {
             "155796": "1300342845",
             "155797": "1300341186",
             "162246": "1300345210",
-            "162247": "1300349450",
-            "162248": "1300348007",
-            "164003": "1300356754",
-            "164004": "1300357909",
-            "164013": "1300354107",
-            "164014": "1388749808",
-            "292470": "4155597387",
-            "292471": "3335426976",
-            "292472": "4155600952",
-            "292498": "2999228918"
+            "162247": "1300349450"
         };
 
         const devicesWithOdometer = await fetchDevicesAndUpdateOdometer(Object.keys(namesAndItemIds));
@@ -152,12 +120,11 @@ async function updateMondayOdometerReadings() {
                         }
                     }
                 `;
-                console.log("Mutation query:", mutationQuery);
                 const response = await fetch("https://api.monday.com/v2", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': mondayAccessToken,
+                        'Authorization': `Bearer ${mondayAccessToken}`,
                     },
                     body: JSON.stringify({ query: mutationQuery })
                 });
