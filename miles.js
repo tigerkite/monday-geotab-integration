@@ -4,10 +4,9 @@ const geotabUsername = process.env.GEOTAB_USERNAME;
 const geotabPassword = process.env.GEOTAB_PASSWORD;
 const geotabPath = process.env.GEOTAB_PATH;
 
-//import fetch from 'node-fetch';
 import GeotabApi from 'mg-api-js';
 
-// Initialize Geotab API with credentials from secrets
+// Initialize Geotab API with credentials
 const api = new GeotabApi({
     credentials: {
         database: geotabDatabase,
@@ -32,21 +31,19 @@ async function fetchMondayGroups() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': mondayAccessToken,
+            'Authorization': `Bearer ${mondayAccessToken}`,
         },
         body: JSON.stringify({ query })
     };
 
     const response = await fetch("https://api.monday.com/v2", request);
-
     const responseData = await response.json();
     console.log("Response from Monday.com API:", responseData);
 
-    const { data } = responseData;
-    if (data && data.boards && Array.isArray(data.boards) && data.boards.length > 0) {
-        return data.boards[0].groups;
+    if (responseData.data?.boards?.length > 0) {
+        return responseData.data.boards[0].groups;
     } else {
-        console.error("Error: Unable to fetch Monday.com groups. Response:", responseData);
+        console.error("Unable to fetch Monday.com groups. Response:", responseData);
         return [];
     }
 }
@@ -54,26 +51,18 @@ async function fetchMondayGroups() {
 async function fetchDevicesAndUpdateOdometer(namesToFind) {
     try {
         const results = [];
-        const group = {
-            id: "GroupAssetInformationId"
-        };
+        const group = { id: "GroupAssetInformationId" };
         const devices = await api.call('Get', {
             typeName: 'Device',
-            search: {
-                groups: [group]
-            },
+            search: { groups: [group] },
             resultsLimit: 200
         });
         const now = new Date().toISOString();
         const calls = [];
-        const diagnostic = {
-            id: "DiagnosticOdometerAdjustmentId"
-        };
+        const diagnostic = { id: "DiagnosticOdometerAdjustmentId" };
 
         devices.forEach(function (device) {
-            const parts = device.name.split(/\s*-\s*/);
-            const deviceIdentifier = parts[0];
-
+            const deviceIdentifier = device.name.split(/\s*-\s*/)[0];
             if (namesToFind.includes(deviceIdentifier)) {
                 results.push({
                     name: device.name,
@@ -94,21 +83,19 @@ async function fetchDevicesAndUpdateOdometer(namesToFind) {
             }
         });
 
-        const callResults = await api.call("ExecuteMultiCall", {
-            calls: calls
-        });
-
+        const callResults = await api.call("ExecuteMultiCall", { calls: calls });
         callResults.forEach((callResult, i) => {
             const statusData = callResult[0];
             if (statusData) {
                 const kilometers = statusData.data;
-                const miles = (kilometers * 0.621371).toFixed(6).slice(0, 6);
+                const miles = (kilometers * 0.621371).toFixed(6);
                 results[i].odometer = miles;
             }
         });
 
         return results.filter(result => result.odometer !== undefined);
     } catch (error) {
+        console.error('Error fetching devices:', error);
         throw error;
     }
 }
@@ -153,12 +140,11 @@ async function updateMondayOdometerReadings() {
                         }
                     }
                 `;
-                console.log("Mutation query:", mutationQuery);
                 const response = await fetch("https://api.monday.com/v2", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': mondayAccessToken,
+                        'Authorization': `Bearer ${mondayAccessToken}`,
                     },
                     body: JSON.stringify({ query: mutationQuery })
                 });
@@ -173,5 +159,4 @@ async function updateMondayOdometerReadings() {
     }
 }
 
-updateMondayOdometerReadings();
 export { updateMondayOdometerReadings };
