@@ -4,7 +4,7 @@ const geotabUsername = process.env.GEOTAB_USERNAME;
 const geotabPassword = process.env.GEOTAB_PASSWORD;
 const geotabPath = process.env.GEOTAB_PATH;
 
-import fetch from 'node-fetch';
+//import fetch from 'node-fetch';
 import GeotabApi from 'mg-api-js';
 
 // Initialize Geotab API with credentials from secrets
