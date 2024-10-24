@@ -1,0 +1,43 @@
+name: Update Vehicle Miles
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Runs every 6 hours
+  workflow_dispatch:        # Allows manual triggering from GitHub UI
+  push:
+    branches:
+      - main              # Runs on push to main branch
+
+jobs:
+  update-miles:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Run update script
+        env:
+          GEOTAB_DATABASE: ${{ secrets.GEOTAB_DATABASE }}
+          GEOTAB_USERNAME: ${{ secrets.GEOTAB_USERNAME }}
+          GEOTAB_PASSWORD: ${{ secrets.GEOTAB_PASSWORD }}
+          GEOTAB_PATH: ${{ secrets.GEOTAB_PATH }}
+          MONDAY_ACCESS_TOKEN: ${{ secrets.MONDAY_ACCESS_TOKEN }}
+        run: |
+          echo "Starting miles update..."
+          node miles.js
+          echo "Update completed"
+
+      - name: Handle errors
+        if: failure()
+        run: |
+          echo "Error occurred during update"
+          exit 1
